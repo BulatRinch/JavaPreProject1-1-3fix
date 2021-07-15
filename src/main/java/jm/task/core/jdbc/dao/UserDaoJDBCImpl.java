@@ -8,63 +8,93 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class UserDaoJDBCImpl implements UserDao {
-    Util con = new Util();
+    Connection con = Util.getInstance().getConnection();
+    PreparedStatement preparedStatement = null;
 
-    public UserDaoJDBCImpl() {
+
+    public UserDaoJDBCImpl() throws SQLException {
 
     }
 
     public void createUsersTable() throws SQLException {
-        String sql = "CREATE TABLE IF NOT EXISTS user (id BIGINT NOT NULL AUTO_INCREMENT, " +
-                "name VARCHAR(20), lastName VARCHAR(20), age TINYINT, PRIMARY KEY (id))";
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try  {
+            String sql = "CREATE TABLE IF NOT EXISTS user (id BIGINT NOT NULL AUTO_INCREMENT, " +
+                    "name VARCHAR(20), lastName VARCHAR(20), age TINYINT, PRIMARY KEY (id))";
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
             preparedStatement.execute();
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
     }
 
     public void dropUsersTable() throws SQLException{
-        String sql = "DROP TABLE IF EXISTS user";
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+        try  {
+            String sql = "DROP TABLE IF EXISTS user";
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
             preparedStatement.execute();
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
     }
 
     public void saveUser(String name, String lastName, byte age) throws SQLException{
-        String sql = "INSERT INTO user (name, lastName, age) Values (?, ?, ?)";
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try {
+            String sql = "INSERT INTO user (name, lastName, age) Values (?, ?, ?)";
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
             preparedStatement.setString(1, name);
             preparedStatement.setString(2, lastName);
             preparedStatement.setByte(3, age);
             preparedStatement.execute();
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
+
+
 
     }
 
     public void removeUserById(long id) throws SQLException {
-        String sql = "DELETE FROM user WHERE id ="+id;
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try  {
+            String sql = "DELETE FROM user WHERE id ="+id;
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
             preparedStatement.execute();
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
     }
 
     public List<User> getAllUsers() throws SQLException {
         List<User> userList = new ArrayList<>();
-        String sql = "SELECT ID, NAME, LASTNAME, AGE FROM user";
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql);
-             ResultSet resultSet = preparedStatement.executeQuery()) {
+
+        try {
+            String sql = "SELECT ID, NAME, LASTNAME, AGE FROM user";
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
             while (resultSet.next()) {
                 User user = new User();
                 user.setId(resultSet.getLong("id"));
@@ -73,19 +103,29 @@ public class UserDaoJDBCImpl implements UserDao {
                 user.setAge(resultSet.getByte("age"));
                 userList.add(user);
             }
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
         return userList;
     }
 
     public void cleanUsersTable() throws SQLException {
-        String sql = "DELETE FROM user";
-        try (Connection connection = DriverManager.getConnection(con.getURL(), con.getUSERNAME(), con.getPASSWORD());
-             PreparedStatement preparedStatement = connection.prepareStatement(sql)) {
+
+        try {
+            String sql = "DELETE FROM user";
+            preparedStatement = con.prepareStatement(sql);
+            con.setAutoCommit(false);
             preparedStatement.execute();
+            con.commit();
         } catch (SQLException e) {
             e.printStackTrace();
+            con.rollback();
+        } finally {
+            con.setAutoCommit(true);
         }
 
     }
